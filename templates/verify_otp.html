@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Verify OTP – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+    <div class="auth-card">
+        <h1>Verify one-time code</h1>
+        <p class="auth-subtitle">
+            Enter the 6-digit code sent to your email to continue.
+        </p>
+        <form method="post" class="auth-form otp-form">
+            <label>
+                One-time password
+                <input type="text" name="otp" maxlength="6" inputmode="numeric" pattern="\d{6}" placeholder="123456" required />
+            </label>
+            <button type="submit" class="btn primary-btn">Verify</button>
+        </form>
+        <p class="auth-footer">
+            Didn't receive a code?
+            <button type="submit" form="resend-form" class="link-button">Resend</button>
+        </p>
+        <form id="resend-form" method="post" action="{{ url_for('auth.resend_otp') }}"></form>
+    </div>
+</body>
+</html>

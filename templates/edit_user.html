@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Edit User – Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">Edit User</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="btn secondary-btn">Back to Admin</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="panel">
+            <form method="post" class="password-form">
+                <label>
+                    Email
+                    <input type="email" name="email" value="{{ user.email }}" required />
+                </label>
+                
+                <label>
+                    Admin Status
+                    <div class="checkbox-container">
+                        <input type="checkbox" name="is_admin" {% if user.is_admin %}checked{% endif %} />
+                        <span>Give this user admin privileges</span>
+                    </div>
+                </label>
+                
+                <div class="user-info">
+                    <h4>User Information</h4>
+                    <p><strong>User ID:</strong> {{ user.id }}</p>
+                    <p><strong>Account created:</strong> User #{{ user.id }}</p>
+                    <p><strong>Password entries:</strong> {{ user.password_count if user.password_count is defined else '0' }}</p>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn primary-btn">Update User</button>
+                    <a href="{{ url_for('admin.admin_dashboard') }}" class="btn ghost-btn">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

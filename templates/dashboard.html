@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">Password Manager</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('passwords.list_passwords') }}" class="btn secondary-btn">My passwords</a>
+            <a href="{{ url_for('profile.view_profile') }}" class="btn secondary-btn">Profile</a>
+            <a href="{{ url_for('security.security_dashboard') }}" class="btn secondary-btn">Security</a>
+            {% if user and user.is_admin %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn secondary-btn">Admin Panel</a>
+            {% endif %}
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="btn ghost-btn">Log out</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="hero">
+            <h2>Your secure vault</h2>
+            <p>Store and manage all your credentials in one encrypted place.</p>
+            <a href="{{ url_for('passwords.add_password') }}" class="btn primary-btn">Add new password</a>
+        </section>
+
+        <section class="panel">
+            <h3>Saved passwords</h3>
+            {% if entries %}
+                <div class="password-list" id="password-list">
+                    {% for e in entries %}
+                        <div class="password-entry" data-site="{{ e.site }}" data-username="{{ e.username }}" data-password="{{ e.password_encrypted }}">
+                            <div class="password-info">
+                                <div class="site-name">
+                                    <strong>{{ e.site }}</strong>
+                                    <button type="button" class="reveal-btn" data-entry-id="{{ e.id }}" title="Show details">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="details-section" id="details-{{ e.id }}" style="display: none;">
+                                    <div class="username-field">
+                                        <span class="label">Username:</span>
+                                        <span class="value">{{ e.username }}</span>
+                                    </div>
+                                    <div class="password-field">
+                                        <span class="label">Password:</span>
+                                        <div class="password-container">
+                                            <input type="password" 
+                                                   id="password-{{ e.id }}" 
+                                                   value="{{ e.password_encrypted }}" 
+                                                   class="password-input" 
+                                                   readonly>
+                                            <button type="button" 
+                                                    class="eye-btn" 
+                                                    data-password-id="{{ e.id }}"
+                                                    title="Show/Hide password">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                    <circle class="eye-open" cx="12" cy="12" r="3"></circle>
+                                                    <path class="eye-closed" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                                    <line class="eye-closed" x1="1" y1="1" x2="23" y2="23"></line>
+                                                </svg>
+                                            </button>
+                                            <button type="button" 
+                                                    class="copy-btn" 
+                                                    data-password-id="{{ e.id }}"
+                                                    title="Copy password">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="entry-actions">
+                                        <a href="{{ url_for('passwords.edit_password', entry_id=e.id) }}" class="btn small-btn">Edit</a>
+                                        <form method="post" action="{{ url_for('passwords.delete_password', entry_id=e.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this password?');">
+                                            <button type="submit" class="btn small-btn danger-btn">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="muted">When you add passwords, they will appear here for quick access.</p>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        function togglePassword(passwordId) {
+            const passwordInput = document.getElementById(`password-${passwordId}`);
+            const eyeBtn = passwordInput.nextElementSibling;
+            const eyeOpen = eyeBtn.querySelector('.eye-open');
+            const eyeClosed = eyeBtn.querySelector('.eye-closed');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeOpen.style.display = 'none';
+                eyeClosed.style.display = 'block';
+                eyeBtn.setAttribute('title', 'Hide password');
+            } else {
+                passwordInput.type = 'password';
+                eyeOpen.style.display = 'block';
+                eyeClosed.style.display = 'none';
+                eyeBtn.setAttribute('title', 'Show password');
+            }
+        }
+        
+        function copyPassword(passwordId) {
+            const passwordInput = document.getElementById(`password-${passwordId}`);
+            
+            // Temporarily show the password if it's hidden
+            const wasHidden = passwordInput.type === 'password';
+            if (wasHidden) {
+                passwordInput.type = 'text';
+            }
+            
+            // Select and copy the password
+            passwordInput.select();
+            passwordInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand('copy');
+                
+                // Show feedback
+                const copyBtn = passwordInput.nextElementSibling.nextElementSibling;
+                const originalHTML = copyBtn.innerHTML;
+                copyBtn.innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+                copyBtn.style.color = '#22c55e';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHTML;
+                    copyBtn.style.color = '';
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy password: ', err);
+            }
+            
+            // Restore hidden state if it was hidden
+            if (wasHidden) {
+                passwordInput.type = 'password';
+            }
+        }
+        
+        function toggleDetails(entryId) {
+            const detailsSection = document.getElementById(`details-${entryId}`);
+            const revealBtn = document.querySelector(`[data-entry-id="${entryId}"]`);
+            const arrow = revealBtn.querySelector('svg path');
+            
+            if (detailsSection.style.display === 'none') {
+                detailsSection.style.display = 'block';
+                arrow.setAttribute('d', 'M5 15l7-7 7 7');
+                revealBtn.setAttribute('title', 'Hide details');
+            } else {
+                detailsSection.style.display = 'none';
+                arrow.setAttribute('d', 'M19 9l-7 7-7-7');
+                revealBtn.setAttribute('title', 'Show details');
+            }
+        }
+        
+        // Initialize event listeners and eye icons
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide closed eye icons by default
+            const eyeClosedElements = document.querySelectorAll('.eye-closed');
+            eyeClosedElements.forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Add event listeners for eye buttons
+            const eyeButtons = document.querySelectorAll('.eye-btn');
+            eyeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const passwordId = this.getAttribute('data-password-id');
+                    togglePassword(parseInt(passwordId));
+                });
+            });
+            
+            // Add event listeners for copy buttons
+            const copyButtons = document.querySelectorAll('.copy-btn');
+            copyButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const passwordId = this.getAttribute('data-password-id');
+                    copyPassword(parseInt(passwordId));
+                });
+            });
+            
+            // Add event listeners for reveal buttons
+            const revealButtons = document.querySelectorAll('.reveal-btn');
+            revealButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const entryId = this.getAttribute('data-entry-id');
+                    toggleDetails(parseInt(entryId));
+                });
+            });
+        });
+    </script>
+</body>
+</html>

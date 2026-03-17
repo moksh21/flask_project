@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">Admin Dashboard</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('passwords.list_passwords') }}" class="btn secondary-btn">My passwords</a>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="btn ghost-btn">Log out</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="hero">
+            <h2>User Management</h2>
+            <p>Manage all registered users and their permissions.</p>
+        </section>
+
+        <section class="panel">
+            <h3>All Users</h3>
+            {% if users %}
+                <div class="user-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Admin</th>
+                                <th>Passwords</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.is_admin %}
+                                            <span class="badge admin-badge">Admin</span>
+                                        {% else %}
+                                            <span class="badge user-badge">User</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.password_count }}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn small-btn">Edit</a>
+                                            
+                                            {% if user.id != session.get('user_id') %}
+                                                <form method="post" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="display: inline;" onsubmit="return confirm('Reset password for {{ user.email }}?');">
+                                                    <button type="submit" class="btn small-btn warning-btn">Reset PW</button>
+                                                </form>
+                                                
+                                                <form method="post" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete {{ user.email }}? This will also delete all their passwords.');">
+                                                    <button type="submit" class="btn small-btn danger-btn">Delete</button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="muted">No users found.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

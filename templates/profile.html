@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Profile – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">My Profile</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('passwords.list_passwords') }}" class="btn secondary-btn">My passwords</a>
+            {% if user and user.is_admin %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn secondary-btn">Admin Panel</a>
+            {% endif %}
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="btn ghost-btn">Log out</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="panel profile-header">
+            <div class="profile-avatar">
+                {% if user.profile_picture %}
+                    <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Profile Picture" class="avatar-large">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <span class="avatar-text">{{ user.email[0].upper() }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h2>{{ user.username if user.username else user.email }}</h2>
+                <p class="profile-email">{{ user.email }}</p>
+                {% if user.is_admin %}
+                    <span class="badge admin-badge">Administrator</span>
+                {% endif %}
+                <div class="profile-stats">
+                    <div class="stat">
+                        <strong>{{ password_count }}</strong>
+                        <span>Passwords</span>
+                    </div>
+                    <div class="stat">
+                        <strong>Member #{{ user.id }}</strong>
+                        <span>User ID</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Profile Settings</h3>
+            <div class="profile-actions">
+                <a href="{{ url_for('profile.edit_profile') }}" class="btn primary-btn">Edit Profile</a>
+                <a href="{{ url_for('profile.change_password') }}" class="btn secondary-btn">Change Password</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Security Dashboard – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">Security Dashboard</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('passwords.list_passwords') }}" class="btn secondary-btn">My passwords</a>
+            <a href="{{ url_for('profile.view_profile') }}" class="btn secondary-btn">Profile</a>
+            {% if user and user.is_admin %}
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn secondary-btn">Admin Panel</a>
+            {% endif %}
+            <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="btn ghost-btn">Log out</button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="hero">
+            <h2>Security Status</h2>
+            <p>Monitor your account security and login activity.</p>
+        </section>
+
+        <section class="panel">
+            <h3>Account Security</h3>
+            <div class="security-grid">
+                <div class="security-item">
+                    <div class="security-label">Failed Login Attempts</div>
+                    <div class="security-value {% if security.failed_attempts > 3 %}warning{% endif %}">
+                        {{ security.failed_attempts }}
+                    </div>
+                </div>
+                
+                <div class="security-item">
+                    <div class="security-label">Account Status</div>
+                    <div class="security-value {% if security.is_locked %}danger{% else %}success{% endif %}">
+                        {% if security.is_locked %}
+                            🔒 Locked
+                        {% else %}
+                            ✅ Active
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if security.lockout_time_remaining %}
+                <div class="security-item">
+                    <div class="security-label">Time Until Unlock</div>
+                    <div class="security-value warning">
+                        {{ security.lockout_time_remaining }} minutes
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% if security.is_locked %}
+            <div class="alert alert-warning">
+                <strong>Account Locked!</strong><br>
+                Your account has been locked due to multiple failed login attempts. 
+                {% if security.lockout_time_remaining %}
+                It will be automatically unlocked in {{ security.lockout_time_remaining }} minutes.
+                {% else %}
+                Please contact support or wait for the lockout period to end.
+                {% endif %}
+            </div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <h3>Login History</h3>
+            <div class="login-history">
+                <div class="history-item">
+                    <div class="history-label">Last Login</div>
+                    <div class="history-value">
+                        {% if security.last_login %}
+                            {{ security.last_login.strftime('%Y-%m-%d %H:%M:%S') }} UTC
+                        {% else %}
+                            No login recorded
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="history-item">
+                    <div class="history-label">Last Login IP</div>
+                    <div class="history-value">
+                        {% if security.last_login_ip %}
+                            {{ security.last_login_ip }}
+                        {% else %}
+                            No IP recorded
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Security Tips</h3>
+            <div class="security-tips">
+                <div class="tip">
+                    <strong>🔒 Use a strong master password</strong><br>
+                    Your master password protects all your stored passwords.
+                </div>
+                <div class="tip">
+                    <strong>📧 Enable email notifications</strong><br>
+                    Get alerts for suspicious login activity.
+                </div>
+                <div class="tip">
+                    <strong>🔐 Don't share your credentials</strong><br>
+                    Never share your login details with anyone.
+                </div>
+                <div class="tip">
+                    <strong>📱 Use trusted devices only</strong><br>
+                    Avoid logging in from public computers.
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Security Actions</h3>
+            <div class="security-actions">
+                {% if security.is_locked %}
+                    <form method="post" action="{{ url_for('security.unlock_account') }}">
+                        <button type="submit" class="btn primary-btn">Unlock Account</button>
+                    </form>
+                {% endif %}
+                <a href="{{ url_for('profile.change_password') }}" class="btn secondary-btn">Change Password</a>
+                <a href="{{ url_for('profile.view_profile') }}" class="btn secondary-btn">Update Profile</a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

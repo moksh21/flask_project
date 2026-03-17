@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Edit Profile – Password Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-body">
+    <header class="top-bar">
+        <h1 class="app-title">Edit Profile</h1>
+        <nav class="top-nav">
+            <a href="{{ url_for('profile.view_profile') }}" class="btn secondary-btn">Back to Profile</a>
+        </nav>
+    </header>
+
+    <main class="content">
+        <section class="panel">
+            <form method="post" class="password-form">
+                <label>
+                    Email
+                    <input type="email" name="email" value="{{ user.email }}" required />
+                </label>
+                
+                <label>
+                    Username
+                    <input type="text" name="username" value="{{ user.username or '' }}" placeholder="Optional" />
+                </label>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn primary-btn">Update Profile</button>
+                    <a href="{{ url_for('profile.view_profile') }}" class="btn ghost-btn">Cancel</a>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel">
+            <h3>Profile Picture</h3>
+            
+            <div class="current-avatar">
+                <h4>Current Avatar</h4>
+                <div class="avatar-preview">
+                    {% if user.profile_picture %}
+                        {% if 'avatars/' in user.profile_picture %}
+                            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Current Avatar" class="avatar-medium">
+                        {% else %}
+                            <img src="{{ url_for('static', filename=user.profile_picture) }}" alt="Current Avatar" class="avatar-medium">
+                        {% endif %}
+                    {% else %}
+                        <div class="avatar-placeholder avatar-medium">
+                            <span class="avatar-text">{{ user.email[0].upper() }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="avatar-options">
+                <h4>Choose Default Avatar</h4>
+                <div class="avatar-grid">
+                    {% for avatar in avatars %}
+                        <form method="post" action="{{ url_for('profile.select_avatar', avatar_name=avatar) }}" class="avatar-form">
+                            <button type="submit" class="avatar-btn" title="{{ avatar }}">
+                                <img src="{{ url_for('static', filename='avatars/' + avatar) }}" alt="{{ avatar }}">
+                                {% if user.profile_picture == 'avatars/' + avatar %}
+                                    <span class="selected">✓</span>
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <h4>Upload Custom Avatar</h4>
+                <form method="post" action="{{ url_for('profile.upload_avatar') }}" enctype="multipart/form-data" class="upload-form">
+                    <label>
+                        <input type="file" name="avatar" accept="image/png, image/jpeg, image/jpg, image/gif" required>
+                        <span class="file-label">Choose file (PNG, JPG, GIF)</span>
+                    </label>
+                    <button type="submit" class="btn primary-btn">Upload Avatar</button>
+                </form>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
